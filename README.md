@@ -25,9 +25,10 @@ transition state.
 | File | Purpose |
 |---|---|
 | `main.py` | Command-line driver; parses arguments and prints results |
+| `api.py` | Public library API (`two_fragment_correction()`) for use from Python |
 | `parse_gaussian.py` | Extracts all relevant data from a Gaussian `.log` file |
 | `thermochem.py` | IGRRHO thermochemistry (translational, rotational, vibrational, electronic contributions) |
-| `inertia.py` | Computes moments of inertia and rotational temperatures for molecular fragments |
+| `output.py` | Output formatting and validation checks |
 
 ## Requirements
 
@@ -93,6 +94,45 @@ the two-fragment treatment, and finally the corrected E_elec + G.
 | `--n_remove` | 6 | Number of lowest frequencies to remove |
 
 For most organic molecules with no special symmetry, the defaults are fine.
+
+## Python API
+
+You can also call the two-fragment correction directly from Python without
+using the command line:
+
+```python
+from api import two_fragment_correction
+
+result = two_fragment_correction(
+    logfile="your_file.log",
+    frag_a="0-30",        # string spec or list[int]
+    # frag_b is inferred as the complement of frag_a
+    sigma_a=1,            # rotational symmetry numbers (default 1)
+    sigma_b=1,
+    validate=True,        # check against Gaussian output (default True)
+)
+
+print(result["G_standard"])        # E_elec + G (standard) in Hartree
+print(result["G_corrected"])       # E_elec + G (two-fragment) in Hartree
+print(result["correction_kcal"])   # correction in kcal/mol
+```
+
+The returned dict contains:
+
+| Key | Description |
+|---|---|
+| `G_standard` | E_elec + G (standard) in Hartree |
+| `G_corrected` | E_elec + G (two-fragment) in Hartree |
+| `correction_hartree` | G_corrected - G_standard in Hartree |
+| `correction_kcal` | Same correction in kcal/mol |
+| `E_elec` | SCF electronic energy in Hartree |
+| `standard` | Full thermochem dict from standard calculation |
+| `two_fragment` | Full thermochem dict from two-fragment calculation |
+
+If `validate=True` (the default), the function checks that the standard
+thermochemistry matches Gaussian's output.  On mismatch it issues a
+`warnings.warn()` but does not raise.  Invalid fragment indices raise a
+`ValueError`.
 
 ## How to figure out your fragment indices
 
