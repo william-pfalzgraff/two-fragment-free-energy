@@ -22,6 +22,7 @@ class GaussianData:
     # Frequencies
     frequencies: list = field(default_factory=list)      # all frequencies in cm^-1
     n_imaginary: int = 0
+    vib_temperatures: list = field(default_factory=list)  # Kelvin, from Gaussian output
 
     # Rotational
     rot_temperatures: list = field(default_factory=list)  # Kelvin [Θ1, Θ2, Θ3]
@@ -115,6 +116,14 @@ def parse_log(filepath: str) -> GaussianData:
 
     # Count imaginary
     data.n_imaginary = sum(1 for f in data.frequencies if f < 0)
+
+    # Vibrational temperatures
+    vt_match = re.search(r'Vibrational temperatures:\s*(.*?)(?:\n\s*\n|\n\s*Zero-point)', text, re.DOTALL)
+    if vt_match:
+        block = vt_match.group(1)
+        # Strip the "(Kelvin)" label and collect all numbers
+        block = re.sub(r'\(Kelvin\)', '', block)
+        data.vib_temperatures = [float(x) for x in re.findall(r'[0-9]+\.[0-9]+', block)]
 
     # Rotational temperatures
     m = re.search(r'Rotational temperatures \(Kelvin\)\s+([0-9.]+)\s+([0-9.]+)\s+([0-9.]+)', text)
