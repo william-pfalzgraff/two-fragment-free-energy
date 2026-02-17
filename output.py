@@ -24,17 +24,18 @@ def print_comparison_table(label, our_value, gauss_value, unit=''):
 # Public functions
 # ---------------------------------------------------------------------------
 
-def print_parse_summary(data):
+def print_parse_summary(data, verbosity=1):
     """Print the post-parse summary block."""
-    print(f"  Atoms: {len(data.atom_numbers)}")
-    print(f"  Temperature: {data.temperature:.3f} K")
-    print(f"  Pressure: {data.pressure:.5f} atm")
-    print(f"  Molecular mass: {data.molecular_mass:.5f} amu")
-    print(f"  SCF energy: {data.scf_energy:.8f} Hartree")
-    print(f"  Frequencies: {len(data.frequencies)} total, {data.n_imaginary} imaginary")
-    print(f"  Rotational temperatures: {data.rot_temperatures}")
-    print(f"  Rotational symmetry number: {data.rot_symmetry_number}")
-    print()
+    if verbosity >= 1:
+        print(f"  Atoms: {len(data.atom_numbers)}")
+        print(f"  Temperature: {data.temperature:.3f} K")
+        print(f"  Pressure: {data.pressure:.5f} atm")
+        print(f"  Molecular mass: {data.molecular_mass:.5f} amu")
+        print(f"  SCF energy: {data.scf_energy:.8f} Hartree")
+        print(f"  Frequencies: {len(data.frequencies)} total, {data.n_imaginary} imaginary")
+        print(f"  Rotational temperatures: {data.rot_temperatures}")
+        print(f"  Rotational symmetry number: {data.rot_symmetry_number}")
+        print()
 
 
 def print_vib_temp_comparison(our_vib_temps, gauss_vib_temps):
@@ -183,21 +184,22 @@ def run_validation_checks(result, data, E_elec, our_vib_temps, tol):
     return checks, failures
 
 
-def print_validation_test(checks, tol):
+def print_validation_test(checks, tol, verbosity=1):
     """Print the PASS/FAIL table for ``--validate``."""
-    vib_temp_tol = 0.05  # K
-    print("=" * 70)
-    print("VALIDATION TEST")
-    print("=" * 70)
-    for label, ours, ref, unit in checks:
-        diff = abs(ours - ref)
-        entry_tol = vib_temp_tol if unit == 'K' else tol
-        status = "PASS" if diff < entry_tol else "FAIL"
-        print(f"  {status}  {label:<40s}  diff = {diff:.2e} {unit}")
-    print()
+    if verbosity >= 1:
+        vib_temp_tol = 0.05  # K
+        print("=" * 70)
+        print("VALIDATION TEST")
+        print("=" * 70)
+        for label, ours, ref, unit in checks:
+            diff = abs(ours - ref)
+            entry_tol = vib_temp_tol if unit == 'K' else tol
+            status = "PASS" if diff < entry_tol else "FAIL"
+            print(f"  {status}  {label:<40s}  diff = {diff:.2e} {unit}")
+        print()
 
 
-def print_two_fragment_results(result_std, result_2frag, E_elec, frag_info, verbose=False):
+def print_two_fragment_results(result_std, result_2frag, E_elec, frag_info, verbosity=1):
     """Print full two-fragment comparison output.
 
     Parameters
@@ -208,7 +210,11 @@ def print_two_fragment_results(result_std, result_2frag, E_elec, frag_info, verb
     frag_info : dict with keys:
         idx_a, idx_b, mass_a, mass_b, rot_a, rot_b, moments_a, moments_b,
         n_remove, sigma_a, sigma_b
+    verbosity : int — 0=silent, 1=concise, 2=full
     """
+    if verbosity < 1:
+        return
+
     idx_a = frag_info['idx_a']
     idx_b = frag_info['idx_b']
     mass_a = frag_info['mass_a']
@@ -244,11 +250,11 @@ def print_two_fragment_results(result_std, result_2frag, E_elec, frag_info, verb
     print(f"  Remaining vibrational modes: {len(result_2frag['kept_freqs'])}")
     print()
 
-    # --- E/Cv/S comparison tables (verbose only) ---
+    # --- E/Cv/S comparison tables (verbosity >= 2 only) ---
     result = result_std
     result2 = result_2frag
 
-    if verbose:
+    if verbosity >= 2:
         print("  E (Thermal) in kcal/mol:")
         print(f"  {'Component':<20s} {'Standard':>14s}  {'Two-Fragment':>14s}  {'Difference':>12s}")
         print(f"  {'-'*20} {'-'*14}  {'-'*14}  {'-'*12}")

@@ -111,14 +111,15 @@ def parse_args():
     return parser.parse_args()
 
 
-def run_standard_thermochem(data, verbose=False):
+def run_standard_thermochem(data, verbosity=1):
     """Compute standard thermochemistry from parsed data.
 
     Returns (result, real_freqs, E_elec, our_vib_temps).
     """
     real_freqs = [f for f in data.frequencies if f > 0]
-    print(f"Real vibrational modes: {len(real_freqs)}")
-    print()
+    if verbosity >= 1:
+        print(f"Real vibrational modes: {len(real_freqs)}")
+        print()
 
     result = compute_thermochem(
         freqs=real_freqs,
@@ -131,7 +132,7 @@ def run_standard_thermochem(data, verbose=False):
 
     E_elec = data.scf_energy
     our_vib_temps = [freq_to_vib_temp(f) for f in real_freqs]
-    if verbose:
+    if verbosity >= 2:
         print_gaussian_comparison(result, data, E_elec, our_vib_temps)
 
     return result, real_freqs, E_elec, our_vib_temps
@@ -171,7 +172,7 @@ def _format_index_range(indices):
     return ",".join(str(i) for i in indices)
 
 
-def resolve_fragments(args, n_atoms):
+def resolve_fragments(args, n_atoms, verbosity=1):
     """Parse fragment args, infer missing fragment, validate.
 
     Returns (idx_a, idx_b) or exits on error.
@@ -184,11 +185,13 @@ def resolve_fragments(args, n_atoms):
     elif args.frag_a:
         idx_a = parse_index_spec(args.frag_a)
         idx_b = sorted(all_indices - set(idx_a))
-        print(f"  Fragment B inferred: atoms {_format_index_range(idx_b)} ({len(idx_b)} atoms)")
+        if verbosity >= 1:
+            print(f"  Fragment B inferred: atoms {_format_index_range(idx_b)} ({len(idx_b)} atoms)")
     else:
         idx_b = parse_index_spec(args.frag_b)
         idx_a = sorted(all_indices - set(idx_b))
-        print(f"  Fragment A inferred: atoms {_format_index_range(idx_a)} ({len(idx_a)} atoms)")
+        if verbosity >= 1:
+            print(f"  Fragment A inferred: atoms {_format_index_range(idx_a)} ({len(idx_a)} atoms)")
 
     frag_errors = validate_fragments(idx_a, idx_b, n_atoms)
     if frag_errors:
@@ -201,21 +204,22 @@ def resolve_fragments(args, n_atoms):
 
 def main():
     args = parse_args()
+    verbosity = 2 if args.verbose else 1
 
     # --- Parse log file ---
     print(f"Parsing: {args.logfile}")
     data = parse_log(args.logfile)
-    print_parse_summary(data)
+    print_parse_summary(data, verbosity=verbosity)
 
     # --- Standard thermochemistry ---
-    result, real_freqs, E_elec, our_vib_temps = run_standard_thermochem(data, verbose=args.verbose)
+    result, real_freqs, E_elec, our_vib_temps = run_standard_thermochem(data, verbosity=verbosity)
 
     # --- Validation ---
     run_validation(result, data, E_elec, our_vib_temps, args)
 
     # --- Two-fragment correction ---
     if args.frag_a or args.frag_b:
-        idx_a, idx_b = resolve_fragments(args, len(data.atom_numbers))
+        idx_a, idx_b = resolve_fragments(args, len(data.atom_numbers), verbosity=verbosity)
 
         rot_a, moments_a, mass_a = compute_fragment_rot_temps(
             data.coordinates, data.atom_masses, idx_a)
@@ -241,7 +245,7 @@ def main():
             'rot_a': rot_a, 'rot_b': rot_b,
             'moments_a': moments_a, 'moments_b': moments_b,
             'n_remove': args.n_remove,
-        }, verbose=args.verbose)
+        }, verbosity=verbosity)
 
 
 if __name__ == '__main__':
