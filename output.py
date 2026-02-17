@@ -197,7 +197,7 @@ def print_validation_test(checks, tol):
     print()
 
 
-def print_two_fragment_results(result_std, result_2frag, E_elec, frag_info):
+def print_two_fragment_results(result_std, result_2frag, E_elec, frag_info, verbose=False):
     """Print full two-fragment comparison output.
 
     Parameters
@@ -244,36 +244,37 @@ def print_two_fragment_results(result_std, result_2frag, E_elec, frag_info):
     print(f"  Remaining vibrational modes: {len(result_2frag['kept_freqs'])}")
     print()
 
-    # --- E/Cv/S comparison tables ---
+    # --- E/Cv/S comparison tables (verbose only) ---
     result = result_std
     result2 = result_2frag
 
-    print("  E (Thermal) in kcal/mol:")
-    print(f"  {'Component':<20s} {'Standard':>14s}  {'Two-Fragment':>14s}  {'Difference':>12s}")
-    print(f"  {'-'*20} {'-'*14}  {'-'*14}  {'-'*12}")
-    for comp in ['E_trans', 'E_rot', 'E_vib', 'E_elec', 'E_total']:
-        label = comp.replace('E_', '').capitalize()
-        v1, v2 = result[comp], result2[comp]
-        print(f"  {label:<20s} {v1:>14.3f}  {v2:>14.3f}  {v2-v1:>+12.3f}")
-    print()
+    if verbose:
+        print("  E (Thermal) in kcal/mol:")
+        print(f"  {'Component':<20s} {'Standard':>14s}  {'Two-Fragment':>14s}  {'Difference':>12s}")
+        print(f"  {'-'*20} {'-'*14}  {'-'*14}  {'-'*12}")
+        for comp in ['E_trans', 'E_rot', 'E_vib', 'E_elec', 'E_total']:
+            label = comp.replace('E_', '').capitalize()
+            v1, v2 = result[comp], result2[comp]
+            print(f"  {label:<20s} {v1:>14.3f}  {v2:>14.3f}  {v2-v1:>+12.3f}")
+        print()
 
-    print("  Cv in cal/(mol·K):")
-    print(f"  {'Component':<20s} {'Standard':>14s}  {'Two-Fragment':>14s}  {'Difference':>12s}")
-    print(f"  {'-'*20} {'-'*14}  {'-'*14}  {'-'*12}")
-    for comp in ['Cv_trans', 'Cv_rot', 'Cv_vib', 'Cv_elec', 'Cv_total']:
-        label = comp.replace('Cv_', '').capitalize()
-        v1, v2 = result[comp], result2[comp]
-        print(f"  {label:<20s} {v1:>14.3f}  {v2:>14.3f}  {v2-v1:>+12.3f}")
-    print()
+        print("  Cv in cal/(mol·K):")
+        print(f"  {'Component':<20s} {'Standard':>14s}  {'Two-Fragment':>14s}  {'Difference':>12s}")
+        print(f"  {'-'*20} {'-'*14}  {'-'*14}  {'-'*12}")
+        for comp in ['Cv_trans', 'Cv_rot', 'Cv_vib', 'Cv_elec', 'Cv_total']:
+            label = comp.replace('Cv_', '').capitalize()
+            v1, v2 = result[comp], result2[comp]
+            print(f"  {label:<20s} {v1:>14.3f}  {v2:>14.3f}  {v2-v1:>+12.3f}")
+        print()
 
-    print("  S in cal/(mol·K):")
-    print(f"  {'Component':<20s} {'Standard':>14s}  {'Two-Fragment':>14s}  {'Difference':>12s}")
-    print(f"  {'-'*20} {'-'*14}  {'-'*14}  {'-'*12}")
-    for comp in ['S_trans', 'S_rot', 'S_vib', 'S_elec', 'S_total']:
-        label = comp.replace('S_', '').capitalize()
-        v1, v2 = result[comp], result2[comp]
-        print(f"  {label:<20s} {v1:>14.3f}  {v2:>14.3f}  {v2-v1:>+12.3f}")
-    print()
+        print("  S in cal/(mol·K):")
+        print(f"  {'Component':<20s} {'Standard':>14s}  {'Two-Fragment':>14s}  {'Difference':>12s}")
+        print(f"  {'-'*20} {'-'*14}  {'-'*14}  {'-'*12}")
+        for comp in ['S_trans', 'S_rot', 'S_vib', 'S_elec', 'S_total']:
+            label = comp.replace('S_', '').capitalize()
+            v1, v2 = result[comp], result2[comp]
+            print(f"  {label:<20s} {v1:>14.3f}  {v2:>14.3f}  {v2-v1:>+12.3f}")
+        print()
 
     # --- Corrections ---
     print("  Thermal corrections (Hartree):")

@@ -106,10 +106,12 @@ def parse_args():
                         help='Run validation test against Gaussian output and exit with status')
     parser.add_argument('--override', action='store_true',
                         help='Continue even if validation against Gaussian fails')
+    parser.add_argument('--verbose', action='store_true',
+                        help='Print full Gaussian comparison and E/Cv/S tables')
     return parser.parse_args()
 
 
-def run_standard_thermochem(data):
+def run_standard_thermochem(data, verbose=False):
     """Compute standard thermochemistry from parsed data.
 
     Returns (result, real_freqs, E_elec, our_vib_temps).
@@ -129,7 +131,8 @@ def run_standard_thermochem(data):
 
     E_elec = data.scf_energy
     our_vib_temps = [freq_to_vib_temp(f) for f in real_freqs]
-    print_gaussian_comparison(result, data, E_elec, our_vib_temps)
+    if verbose:
+        print_gaussian_comparison(result, data, E_elec, our_vib_temps)
 
     return result, real_freqs, E_elec, our_vib_temps
 
@@ -205,7 +208,7 @@ def main():
     print_parse_summary(data)
 
     # --- Standard thermochemistry ---
-    result, real_freqs, E_elec, our_vib_temps = run_standard_thermochem(data)
+    result, real_freqs, E_elec, our_vib_temps = run_standard_thermochem(data, verbose=args.verbose)
 
     # --- Validation ---
     run_validation(result, data, E_elec, our_vib_temps, args)
@@ -238,7 +241,7 @@ def main():
             'rot_a': rot_a, 'rot_b': rot_b,
             'moments_a': moments_a, 'moments_b': moments_b,
             'n_remove': args.n_remove,
-        })
+        }, verbose=args.verbose)
 
 
 if __name__ == '__main__':
