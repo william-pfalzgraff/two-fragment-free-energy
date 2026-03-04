@@ -1,4 +1,4 @@
-# Free Energy Calculator
+# Two-Fragment Free Energy Calculator
 
 A Python tool for recomputing Gibbs free energies from Gaussian frequency
 calculations, with an optional **two-fragment correction** for transition states
