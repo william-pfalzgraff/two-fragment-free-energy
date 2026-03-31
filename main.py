@@ -108,6 +108,10 @@ def parse_args():
                         help='Continue even if validation against Gaussian fails')
     parser.add_argument('--verbose', action='store_true',
                         help='Print full Gaussian comparison and E/Cv/S tables')
+    parser.add_argument('--units', type=str.lower, default='hartree',
+                        choices=['hartree', 'kcal/mol', 'kj/mol', 'ev'],
+                        metavar='UNITS',
+                        help='Units for the final key result: hartree (default), kcal/mol, kj/mol, ev')
     return parser.parse_args()
 
 
@@ -245,7 +249,7 @@ def main():
             'rot_a': rot_a, 'rot_b': rot_b,
             'moments_a': moments_a, 'moments_b': moments_b,
             'n_remove': args.n_remove,
-        }, verbosity=verbosity)
+        }, verbosity=verbosity, units=args.units)
 
 
 if __name__ == '__main__':

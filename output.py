@@ -9,6 +9,14 @@ import sys
 
 from thermochem import kcal_to_hartree, freq_to_vib_temp
 
+# Conversion factors from Hartree and display labels/precision for --units
+_UNIT_CONV = {
+    'hartree':  (1.0,                  'Hartree',   6),
+    'kcal/mol': (1.0 / kcal_to_hartree, 'kcal/mol', 3),
+    'kj/mol':   (2625.4996395,          'kJ/mol',    3),
+    'ev':       (27.211386245,          'eV',        6),
+}
+
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -199,7 +207,7 @@ def print_validation_test(checks, tol, verbosity=1):
         print()
 
 
-def print_two_fragment_results(result_std, result_2frag, E_elec, frag_info, verbosity=1):
+def print_two_fragment_results(result_std, result_2frag, E_elec, frag_info, verbosity=1, units='hartree'):
     """Print full two-fragment comparison output.
 
     Parameters
@@ -314,8 +322,8 @@ def print_two_fragment_results(result_std, result_2frag, E_elec, frag_info, verb
     # --- Key result ---
     G_standard = E_elec + result['thermal_correction_gibbs']
     G_corrected = E_elec + result2['thermal_correction_gibbs']
-    print(f"  *** E_elec + G (standard):      {G_standard:.6f} Hartree")
-    print(f"  *** E_elec + G (two-fragment):   {G_corrected:.6f} Hartree")
-    print(f"  *** Correction:                  {(G_corrected - G_standard):.6f} Hartree")
-    print(f"  ***                              {(G_corrected - G_standard) / kcal_to_hartree:.3f} kcal/mol")
+    factor, unit_label, prec = _UNIT_CONV[units]
+    print(f"  *** E_elec + G (standard):      {G_standard * factor:.{prec}f} {unit_label}")
+    print(f"  *** E_elec + G (two-fragment):   {G_corrected * factor:.{prec}f} {unit_label}")
+    print(f"  *** Correction:                  {(G_corrected - G_standard) * factor:.{prec}f} {unit_label}")
     print()
